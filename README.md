@@ -1,58 +1,21 @@
-# PII NER Assignment Skeleton
+# PII Entity Recognition for Noisy STT Transcripts
 
-This repo is a skeleton for a token-level NER model that tags PII in STT-style transcripts.
+Token-level NER model for detecting PII in noisy Speech-to-Text inputs. Uses a quantized DistilBERT model to achieve <20ms p95 latency on CPU.
 
 ## Setup
 
 ```bash
 pip install -r requirements.txt
-```
+python src/generate_data.py
 
-## Train
+# 1. Train
+python src/train.py --model_name distilbert-base-uncased --train data/train.jsonl --dev data/dev.jsonl --out_dir out
 
-```bash
-python src/train.py \
-  --model_name distilbert-base-uncased \
-  --train data/train.jsonl \
-  --dev data/dev.jsonl \
-  --out_dir out
-```
+# 2. Predict
+python src/predict.py --model_dir out --input data/dev.jsonl --output out/dev_pred.json
 
-## Predict
+# 3. Evaluate
+python src/eval_span_f1.py --gold data/dev.jsonl --pred out/dev_pred.json
 
-```bash
-python src/predict.py \
-  --model_dir out \
-  --input data/dev.jsonl \
-  --output out/dev_pred.json
-```
-
-## Evaluate
-
-```bash
-# Dev set
-python src/eval_span_f1.py \
-  --gold data/dev.jsonl \
-  --pred out/dev_pred.json
-
-# (Optional) stress test set
-python src/predict.py \
-  --model_dir out \
-  --input data/stress.jsonl \
-  --output out/stress_pred.json
-
-python src/eval_span_f1.py \
-  --gold data/stress.jsonl \
-  --pred out/stress_pred.json
-```
-
-## Measure latency
-
-```bash
-python src/measure_latency.py \
-  --model_dir out \
-  --input data/dev.jsonl \
-  --runs 50
-```
-
-Your task in the assignment is to modify the model and training code to improve entity and PII detection quality while keeping **p95 latency below ~20 ms** per utterance (batch size 1, on a reasonably modern CPU).
+# 4. Latency Check
+python src/measure_latency.py --model_dir out --input data/dev.jsonl --runs 50
